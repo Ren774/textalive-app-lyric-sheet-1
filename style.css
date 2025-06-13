@@ -1,151 +1,218 @@
-/* 背景 / Background */
+/*----------------------------------------------
+ * 背景の設定 / Background Styling
+ *----------------------------------------------*/
 body {
+  /* 背景色のベースカラー（fallback） */
   background: #c33c68;
-  background-image: linear-gradient(0deg, #bfaefc 0, #fea3db 50%, #9ae1dd 100%);
+
+  /* グラデーション背景：上から下へ（0度）順に3色を配置 */
+  background-image: linear-gradient(0deg, #bfaefc 0%, #fea3db 50%, #9ae1dd 100%);
+  background-image: url("data:image/jpeg;base64,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");
+
+  /* 背景をスクロールしても固定表示（パララックス風） */
   background-attachment: fixed;
+
+  /* 背景サイズを画面いっぱいに広げる */
   background-size: 100vw 100vh;
+
+  margin: 0; /* ページ端の余白をなくす */
+  overflow: hidden; /* スクロールバーを非表示に */
+  background: radial-gradient(#001f3f, #000814); /* 夜の水面のような背景 */
+  height: 100vh; /* 画面の高さを100%に */
+  position: relative; /* 波紋の絶対位置指定の基準にする */
+  cursor: pointer; /* マウスカーソルを「手」に変更 */
 }
 
-/* オーバーレイ / Overlay */
+
+/* 波紋の見た目の設定 */
+    .ripple {
+      position: absolute; /* 画面上の自由な位置に配置可能に */
+      border-radius: 50%; /* 波紋を丸くする */
+      border: 1px solid rgba(255, 255, 255, 0.6); /* 白くて半透明の細い輪郭線 */
+      background: transparent; /* 中は透明（水の輪っかっぽく） */
+      width: 30px;  /* 初期の横幅 */
+      height: 30px; /* 初期の縦幅 */
+      pointer-events: none; /* 波紋自体はクリック不可 */
+      transform: translate(-50%, -50%) scale(0.2); /* 中心から出るようにして、小さく開始 */
+      animation: rippleEffect 2s ease-out forwards; /* 3秒かけて広がって消えるアニメ */
+    }
+
+    /* 波紋の遅延バリエーション（3つの時間差波紋を出す） */
+    .delay-1 { animation-delay: 0.3s; }
+    .delay-2 { animation-delay: 0.6s; }
+    .delay-3 { animation-delay: 0.9s; }
+
+    /* 波紋のアニメーションの内容 */
+    @keyframes rippleEffect {
+      0% {
+        transform: translate(-50%, -50%) scale(0.2); /* 小さい状態から始まる */
+        opacity: 0.8;        /* 少し透明 */
+        filter: blur(0px);   /* くっきり */
+      }
+      50% {
+        opacity: 0.4;        /* 少し薄くなる */
+        filter: blur(1px);   /* 少しぼかす（水面のにじみ感） */
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(10); /* 大きく広がる！ */
+        opacity: 0;          /* 完全に消える */
+        filter: blur(2px);   /* ぼかしを強めてふんわり消える */
+      }
+    }
+
+/*----------------------------------------------
+ * 画面中央に表示するオーバーレイ / Overlay UI
+ *----------------------------------------------*/
 #overlay {
+  /* テキスト選択を無効にする */
   user-select: none;
+
+  /* 画面全体に固定配置（スクロールに影響されない） */
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
+
+  /* 中央にコンテンツを配置するためのフレックスボックス */
   display: flex;
   align-items: center;
+
+  /* 半透明の黒背景（RGBA 0.6相当） */
   background: #0006;
+
+  /* テキストの色（白に近いが若干透ける） */
   color: #fffc;
+
+  /* 他の要素より上に表示（レイヤー順） */
   z-index: 5;
 }
+
+/* 非表示状態（display:noneでDOM上も消す） */
 #overlay.disabled {
   display: none;
 }
+
+/* オーバーレイ内のテキスト中央配置 */
 #overlay > p {
   width: 100vw;
   font-size: 40px;
   text-align: center;
 }
+
+/* オーバーレイ内の強調部分 */
 #overlay > p > span {
   display: inline-block;
   padding-right: 20px;
   margin-right: 20px;
+
+  /* 区切り線 */
   border-right: 1px solid #fff6;
 }
 
-/* フッターと音源 / Header and audio source */
+/*----------------------------------------------
+ * ヘッダーと音源情報パネル / Header and Media
+ *----------------------------------------------*/
 #header,
 #media {
-  /* ページ左に固定 / Stick to the page left */
+  /* 左端に固定配置 */
   position: fixed;
   left: 0;
 
-  /* 背景色と文字色 / Background and text color */
+  /* 半透明の黒背景＋白文字 */
   background: #000c;
   color: #fff;
 
+  /* 前面に表示（ただしオーバーレイよりは下） */
   z-index: 1;
 }
 
-/* フッター / Footer */
+/* ヘッダーのスタイル設定 */
 #header {
-  /* 上寄せ / Top-aligned */
+  /* 上端から少し下に配置 */
   top: 20px;
 
-  /* 少し余裕を持たせる / Box with a small padding */
+  /* 内側余白 */
   padding: 10px 16px;
 
-  /* フォントサイズ小さめ、太め / Small but bold typography */
+  /* 小さめの太字フォント */
   font-size: 10.5px;
   font-weight: bold;
 
-  /* 子要素を横に並べて配置 / Align child content to the right */
+  /* 横並びで要素を配置 */
   display: flex;
 
-  /* 子要素は縦に中央揃え / Vertically middle-aligned */
+  /* 子要素を縦方向に中央揃え */
   align-items: center;
 }
 
-/* 再生ボタン / Play button */
+/* 再生ボタンのコンテナ */
 #control {
   font-size: 21px;
   padding-right: 10px;
   border-right: 1px solid #fff9;
 }
+
+/* 再生ボタンの非表示状態 */
 #control.disabled {
   display: none;
 }
+
+/* 再生ボタンのリンク */
 #control a {
-  color: rgb(99 208 226);
-  text-decoration: none;
+  color: rgb(99 208 226); /* 青系のリンク色 */
+  text-decoration: none;  /* 下線なし */
 }
+
+/* 無効化状態のリンク（薄く表示） */
 #control a.disabled {
   opacity: 0.3;
 }
+
+/* マウスホバー時のリンク色（オレンジ系） */
 #control a:hover {
   color: rgb(255 148 56);
 }
 
-/* アーティストと楽曲の情報 / Artist and song info */
+/* 楽曲情報エリア */
 #meta {
   padding-left: 10px;
 }
+
+/* 曲名やアーティスト名の装飾 */
 #meta span {
   font-weight: normal;
 }
 
-/* 音源 / Audio source */
+/* 音源情報の表示位置（画面下部） */
 #media {
-  /* 下寄せ / Bottom-aligned */
   bottom: 10px;
 }
+
+/* 無効化された音源エリア（幅・高さゼロで非表示） */
 #media.disabled > .textalive-media-wrapper {
   width: 0;
   height: 0;
 }
 
-/**
- * ビート情報が取れるようになったらビートバーを表示
- * Show beat bar when beat information becomes available
- */
+/*----------------------------------------------
+ * アニメーション定義 / Keyframe Animations
+ *----------------------------------------------*/
+
+/* ビートバーの初期表示アニメーション（横幅拡大＋透明度） */
 @keyframes activateBeatBar {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    width: 100%;
-    opacity: 1;
-  }
+  0% { opacity: 0; }
+  100% { width: 100%; opacity: 1; }
 }
 
-/**
- * ビート毎に右に広げてフェードアウト
- * Make beat bar span to the right and then fade out
- */
+/* ビート毎のアニメーション（右へ伸びてフェードアウト） */
 @keyframes showBeatBar {
-  0% {
-    width: 0;
-    opacity: 1;
-  }
-  50% {
-    width: 100%;
-    opacity: 1;
-  }
-  100% {
-    width: 100%;
-    opacity: 0;
-  }
+  0%   { width: 0; opacity: 1; }
+  50%  { width: 100%; opacity: 1; }
+  100% { width: 100%; opacity: 0; }
 }
 
-/**
- * 歌詞が下からせり出してくる
- * Make lyrics text appear from the bottom
- */
+/* 歌詞の出現アニメーション（上からスライド＋フェードイン） */
 @keyframes showLyrics {
   0% {
-    transform: translate3d(0, 100%, 0);
+    transform: translate3d(0, -100%, 0);
     opacity: 0;
   }
   100% {
@@ -154,86 +221,95 @@ body {
   }
 }
 
-/* ビートバー / Beat bar */
+/*----------------------------------------------
+ * ビートバーの見た目 / Beat Bar
+ *----------------------------------------------*/
 #bar {
-  opacity: 0;
-  height: 3px;
-  background: rgb(255 222 193);
+  opacity: 0;                /* 初期状態では非表示 */
+  height: 3px;               /* 高さ3pxの細いバー */
+  background: rgb(255 222 193);  /* 明るめのピンク色 */
 }
+
+/* 有効化時のアニメーション */
 #bar.active {
   animation: activateBeatBar 0.3s;
 }
+
+/* ビート検出時のアニメーション */
 #bar.beat {
   animation: showBeatBar 0.5s;
 }
 
-/* 歌詞 / Lyrics */
+/*----------------------------------------------
+ * 歌詞の表示スタイル / Lyrics
+ *----------------------------------------------*/
 #lyrics {
   z-index: 0;
-  padding: 3em 0 5em 0;
-  line-height: 2em;
-  font-size: 36px;
-  font-family: "Shippori Mincho B1", serif;
-  color: #e2f8fc;
-  text-shadow: 2px 2px 3px #e4215a;
-  user-select: none;
-  cursor: pointer;
+  padding: 3em 0 5em 0;              /* 上下の余白（上下非対称） */
+  line-height: 2em;                  /* 行間 */
+  font-size: 36px;                   /* 大きめフォント */
+  font-family: "Shippori Mincho B1", serif; /* 和風の明朝体 */
+  color: #e2f8fc;                    /* 明るい青緑 */
+  text-shadow: 2px 2px 3px #e4215a;  /* 赤い影（立体感） */
+  user-select: none;                /* テキスト選択不可 */
+  cursor: pointer;                  /* カーソル表示 */
 
-  /* 歌詞をちょっと回転させる / Rotate text */
+  /* 少し立体的な傾き */
   transform: rotateX(10deg) rotateY(-10deg);
 }
+
+/* 歌詞文字（1文字ずつ）のラッパー */
 #text > div {
-  /* 文字ごとに改行しない / No line-break per char */
-  display: inline-block;
-  /* 溢れた部分を隠す / Hide overflow content */
-  /* overflow: hidden; */
-  /* 高さ指定で文字をあえて溢れさす / Make text overflow with height specified */
-  /* height: 45px; */
+  display: inline-block;   /* 横並び */
+  /*overflow: hidden;*/     /* 溢れ防止（コメントアウト中） */
+  /*height: 45px;*/         /* 高さ指定でアニメを制御（コメントアウト中） */
 }
+
+/* 各文字のアニメーション */
 #text > div > div {
   animation: showLyrics 0.5s;
 }
 
-/**
- * 名詞などを強調表示する
- * Emphasize nouns
- */
+/* 名詞を強調表示 */
 #text .noun {
-  color: #ddf9ff;
-  font-size: 40px;
+  color: #ddf9ff;         /* 明るい水色 */
+  font-size: 40px;        /* 大きめに強調 */
 }
 
-/**
- * フレーズ終わりで右にマージンを空けて読みやすくする
- * Add right margin to the last char in phrases
- */
+/* フレーズ終わりの文字に余白追加 */
 #text .lastChar {
   margin-right: 40px;
 }
 
+/* 英単語の先頭と末尾にマージン */
 #text .firstCharInEnglishWord {
   margin-left: 20px;
 }
-
 #text .lastCharInEnglishWord {
   margin-right: 20px;
 }
-
+/* 連続する英単語間のマージン調整 */
 #text .lastCharInEnglishWord + .firstCharInEnglishWord {
   margin-left: 0;
 }
 
+/*----------------------------------------------
+ * 再生シークバー / Seek Bar
+ *----------------------------------------------*/
 #seekbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 10px;
+
+  /* 半透明の白いバー */
   background: rgba(255 255 255 / 40%);
 }
 
+/* 再生位置のバー */
 #seekbar > div {
-  width: 0;
-  height: 100%;
-  background: rgba(255 255 255 / 80%);
+  width: 0;                 /* 初期幅ゼロ（再生と共に増加） */
+  height: 100%;             /* 高さは親要素と同じ */
+  background: rgba(255 255 255 / 80%); /* より目立つ白色 */
 }

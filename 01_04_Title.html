@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>動画背景 + 遅延付き波紋（3つの円）</title>
+  <!-- 外部のCSSファイルを読み込む -->
+  <link rel="stylesheet" href="01_04_Title.css" />
+</head>
+<body>
+
+  <!-- 背景として表示する動画 -->
+  <video id="bgVideo" autoplay muted playsinline>
+    <source src="Title_Mv.mp4" type="video/mp4">
+    このブラウザは動画をサポートしていません。
+  </video>
+
+  <!-- 外部のJavaScriptファイルを読み込む -->
+  <script src="01_04_Title.js"></script>
+
+  <!-- ★追加部分: クリック用の透明なdiv -->
+  <div id="clickLayer"></div>
+
+  <!-- 外部JavaScriptファイルの読み込み（元のまま） -->
+  <script src="01_04_Title.js"></script>
+
+</body>
+</html>

@@ -6,6 +6,44 @@
  * 発声にあわせて歌詞が表示され、歌詞をクリックするとそのタイミングに再生がシークします。
  * また、このアプリが TextAlive ホストと接続されていなければ再生コントロールを表示します。
  */
+// APIキーとエンドポイントを設定
+const API_KEY = "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"; // ←ご自身のAPIキーに置き換えてください
+const API_URL = "https://api.perplexity.ai/chat/completions"; // Perplexity API
+
+async function getAIReply() {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-sonar-small-128k-online",
+      messages: [
+        { role: "user", content: "ジャイアン(1)とのび太(2)はどっちが強いか。余計な文字は一切入れずに、「12」とか「21」とかだけで返してください" }
+      ]
+    })
+  });
+  const data = await response.json();
+
+
+  // レスポンス構造に応じて返答を取得
+  /*if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+    return data.choices[0].message.content;
+  } else if (data.output && data.output[0] && data.output[0].content && data.output[0].content[0] && data.output[0].content[0].text) {
+    return data.output[0].content[0].text;
+  } else if (data.error) {
+    return "APIエラー: " + data.error.message;
+  } else {
+    return "APIレスポンスに返答がありません";
+  }*/
+}
+
+
+
+
+
+
 const { Player } = TextAliveApp;
 
 // TextAlive Player を初期化
@@ -59,20 +97,51 @@ player.addListener({
       document.querySelector("#media").className = "disabled";
 
       // ストリートライト / 加賀(ネギシャワーP)
-      player.createFromSongUrl("https://piapro.jp/t/ULcJ/20250205120202", {
+      /*player.createFromSongUrl("https://piapro.jp/t/ULcJ/20250205120202", {
         video: {
           // 音楽地図訂正履歴
           beatId: 4694275,
           chordId: 2830730,
           repetitiveSegmentId: 2946478,
-      
+          
           // 歌詞URL: https://piapro.jp/t/DPXV
           // 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/piapro.jp%2Ft%2FULcJ%2F20250205120202
           lyricId: 67810,
           lyricDiffId: 20654
         },
+      });*/
+
+      // パレードレコード / きさら
+      player.createFromSongUrl("https://piapro.jp/t/GCgy/20250202202635", {
+        video: {
+          // 音楽地図訂正履歴
+          beatId: 4694279,
+          chordId: 2830734,
+          repetitiveSegmentId: 2946482,
+      
+          // 歌詞URL: https://piapro.jp/t/FJ5N
+          // 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/piapro.jp%2Ft%2FGCgy%2F20250202202635
+          lyricId: 67814,
+          lyricDiffId: 20658
+        },
       });
     }
+    
+    // AIに"こんにちは"を送り返答をポップアップで表示
+  getAIReply()
+    .then(reply => {
+      // 返答がエラーや空の場合も考慮
+      if (!reply) {
+        alert("AIの返答が取得できませんでした。");
+      } else {
+        alert("AIの返答: " + reply);
+      }
+    })
+    .catch(err => {
+      // エラー内容も詳細に表示
+      alert("API呼び出しエラー: " + (err && err.message ? err.message : err));
+    });
+
   },
 
   /* パラメタが更新されたら呼ばれる */
@@ -267,3 +336,72 @@ function resetChars() {
   while (textContainer.firstChild)
     textContainer.removeChild(textContainer.firstChild);
 }
+
+
+
+/**
+   * 波紋を画面に追加する関数
+   * @param {number} x - クリックされた位置のX座標
+   * @param {number} y - クリックされた位置のY座標
+   */
+  function createRipple(x, y) {
+    // 波紋を4つ作成（少しずつ遅れて重なるように）
+    for (let i = 0; i < 1; i++) {
+      const ripple = document.createElement('div'); // div要素を新しく作成
+      ripple.className = 'ripple'; // 波紋スタイルを適用
+
+      // 2つ目以降の波紋に遅延クラスを追加（0.3s, 0.6s, 0.9s）
+      if (i > 0) {
+        ripple.classList.add(`delay-${i}`);
+      }
+
+      // 波紋の位置をクリックされた場所に設定
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+
+      // ページに波紋を追加
+      document.body.appendChild(ripple);
+
+      // 3.5秒後に波紋を削除（画面に残らないように）
+      setTimeout(() => ripple.remove(), 3500);
+    }
+  }
+
+  // 画面クリック時に波紋を発生させる
+  document.body.addEventListener('click', (e) => {
+    createRipple(e.clientX, e.clientY); // マウスの位置を渡す
+  });
+
+  // 背景画像のURLを配列として定義します
+// ※画像は "images" フォルダに保存しておく必要があります
+const backgroundImages = [
+  "url('https://cdn.pixabay.com/photo/2021/10/30/17/54/desert-6755127_1280.jpg')",
+];
+
+// 現在表示している背景画像のインデックスを記録します
+let currentImageIndex = 0;
+
+// 背景画像を切り替える関数を定義します
+function changeBackgroundImage() {
+  // bodyの背景画像スタイルを、現在のインデックスにある画像に設定します
+  document.body.style.backgroundImage = backgroundImages[currentImageIndex];
+
+  // インデックスを1つ進めます（最後まで行ったら0に戻るようにします）
+  currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+}
+
+// TextAlive App のプレイヤーが利用可能になったときのイベント
+player.addListener({
+  onAppReady(app) {
+    // ここに他の初期化コードが入っているかもしれません
+
+    // 最初の背景画像を即時に設定しておきます（ページ読み込み直後）
+    changeBackgroundImage();
+
+    // setInterval関数で、10秒ごと（10000ミリ秒ごと）に
+    // changeBackgroundImage 関数を実行するように設定します
+    setInterval(changeBackgroundImage, 10000);
+  }
+
+  // 他のリスナー（必要に応じて追加）...
+});

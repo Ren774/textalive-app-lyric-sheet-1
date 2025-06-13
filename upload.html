@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>画像×歌詞マッチングAI</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2em auto; }
+    img { max-width: 100px; margin: 5px; vertical-align: middle; border: 1px solid #ccc; }
+    textarea { width: 100%; min-height: 80px; }
+    .status { margin: 1em 0; font-weight: bold; }
+    .loading { color: orange; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <h1>画像×歌詞マッチングAI（並び替えデモ）</h1>
+
+  <!-- 画像アップロード -->
+  <h3>1. 画像をアップロード</h3>
+  <input type="file" id="imgInput" accept="image/*" multiple>
+  <div id="imageContainer"></div>
+  <div class="status" id="imgStatus"></div>
+
+  <!-- 歌詞入力 -->
+  <h3>2. 歌詞を入力</h3>
+  <textarea id="lyrics" placeholder="ここに歌詞を入力"></textarea>
+
+  <!-- マッチング実行ボタン -->
+  <h3>3. 画像を並び替え</h3>
+  <button id="matchBtn">AIに並び順を決めてもらう</button>
+  <div class="status" id="matchStatus"></div>
+
+  <!-- 並び替え後にindex.htmlへ移動するボタン（最初は非表示） -->
+ <button id="goIndexBtn" style="display:inline-block; margin-top:10px;">index.htmlへ移動</button>
+
+
+  <!-- 結果表示 -->
+  <h3>並び替え結果</h3>
+  <pre id="result">（AIの説明が表示されます）</pre>
+
+  <script>
+    const API_KEY = "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"; // ← 実際のAPIキーに置き換えてください
+    const API_URL = "https://api.perplexity.ai/chat/completions";
+
+    const imgInput = document.getElementById("imgInput");
+    const imageContainer = document.getElementById("imageContainer");
+    const imgStatus = document.getElementById("imgStatus");
+    const lyrics = document.getElementById("lyrics");
+    const matchBtn = document.getElementById("matchBtn");
+    const matchStatus = document.getElementById("matchStatus");
+    const result = document.getElementById("result");
+    const goIndexBtn = document.getElementById("goIndexBtn");
+
+    // アップロード画像のデータを格納する配列
+    let imageDescriptions = []; // [{desc, base64, thumbUrl}]
+    let currentOrder = null;  // 並び替えた順番（index配列）
+
+    // ファイル選択時の処理
+    imgInput.addEventListener("change", async () => {
+      const files = Array.from(imgInput.files || []);
+      imageDescriptions = [];
+      currentOrder = null;
+      for (const file of files) {
+        imgStatus.textContent = "画像を解析中...";
+        imgStatus.className = "status loading";
+
+        try {
+          const thumbUrl = URL.createObjectURL(file);
+          const base64 = await fileToDataURL(file);
+
+          // Perplexityへ送信して画像説明を取得
+          const body = {
+            model: "sonar-pro",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: "この画像を日本語で簡単に説明してください。" },
+                  { type: "image_url", image_url: { url: base64 } }
+                ]
+              }
+            ]
+          };
+
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+          });
+
+          const data = await res.json();
+          const desc = data?.choices?.[0]?.message?.content?.trim() || "（説明なし）";
+
+          imageDescriptions.push({ desc, base64, thumbUrl });
+        } catch (err) {
+          imgStatus.textContent = "エラー：" + err.message;
+          imgStatus.className = "status error";
+          return;
+        }
+      }
+
+      updateImageDisplay(); // サムネイル表示
+      imgStatus.textContent = "画像解析が完了しました";
+      imgStatus.className = "status success";
+    });
+
+    // ファイルをBase64に変換する関数
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // HTMLに画像を表示する関数
+    function updateImageDisplay(order = null) {
+      imageContainer.innerHTML = "";
+      const list = order ? order.map(i => imageDescriptions[i]) : imageDescriptions;
+      list.forEach((imgData, index) => {
+        const img = document.createElement("img");
+        img.src = imgData.thumbUrl;
+        img.title = `${index + 1}: ${imgData.desc}`;
+        imageContainer.appendChild(img);
+      });
+    }
+
+    // 並び替えボタン押下
+    matchBtn.addEventListener("click", async () => {
+      result.textContent = "";
+      matchStatus.textContent = "AIに問い合わせ中...";
+      matchStatus.className = "status loading";
+      
+
+      if (imageDescriptions.length === 0 || !lyrics.value.trim()) {
+        matchStatus.textContent = "画像または歌詞が不足しています。";
+        matchStatus.className = "status error";
+        return;
+      }
+
+      // 画像説明文を列挙
+      const descs = imageDescriptions.map((d, i) => `${i + 1}. ${d.desc}`).join("\n");
+
+      // AIに指示するプロンプト
+      const prompt = `
+以下の画像説明文と歌詞を照らし合わせ、画像の最適な並び順を「順番：1、3、2」のように番号で示してください。また、その理由も簡潔に述べてください。
+
+画像説明文:
+${descs}
+
+歌詞:
+${lyrics.value.trim()}
+      `.trim();
+
+      try {
+        const body = {
+          model: "sonar-pro",
+          messages: [{ role: "user", content: prompt }]
+        };
+
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content?.trim() || "（返答なし）";
+        result.textContent = reply;
+        matchStatus.textContent = "並び替え完了";
+        matchStatus.className = "status success";
+
+        // 順番を解析し画像を並べ替え
+        const orderMatch = reply.match(/順番[:：]\s*([\d、,\s]+)/);
+        if (orderMatch) {
+          currentOrder = orderMatch[1]
+            .replace(/、/g, ',')
+            .split(',')
+            .map(s => parseInt(s.trim(), 10) - 1)
+            .filter(i => i >= 0 && i < imageDescriptions.length);
+
+          updateImageDisplay(currentOrder); // 並び替えて表示
+          goIndexBtn.style.display = "inline-block"; // ★ 並び替え成功時に表示する
+
+        } else {
+          currentOrder = null;
+          // goIndexBtn.style.display = "none";
+        }
+
+      } catch (err) {
+        matchStatus.textContent = "エラー：" + err.message;
+        matchStatus.className = "status error";
+        // goIndexBtn.style.display = "none";
+      }
+    });
+
+    // index.htmlへ移動ボタン押下時
+    goIndexBtn.addEventListener("click", () => {
+      if (!currentOrder) {
+        alert("並び替え結果がありません。");
+        return;
+      }
+
+      // 並び替えた画像データを送るためにsessionStorageに保存
+      const sortedImages = currentOrder.map(i => imageDescriptions[i]);
+
+      // base64と説明だけ保存（容量が大きい場合注意）
+      sessionStorage.setItem("sortedImages", JSON.stringify(sortedImages));
+
+      // index.htmlへ遷移
+      window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>
