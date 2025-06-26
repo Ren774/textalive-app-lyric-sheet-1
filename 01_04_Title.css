@@ -1,68 +1,124 @@
-/* ページ全体の余白をなくし、高さを画面全体に設定 */
-html, body {
+/* 全体の初期設定 */
+body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* スクロールバーを表示しない */
+  overflow: hidden;
 }
 
-/* クリック検知用の透明レイヤー */
-    #clickLayer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2; /* 動画より前面に表示 */
-      cursor: pointer; /* マウスカーソルをポインターに変更 */
-      background-color: rgba(0, 0, 0, 0); /* 完全に透明 */
-    }
-
-/* 動画の設定：画面いっぱいに固定表示し、動画を切り抜き調整 */
-video#bgVideo {
-  position: fixed; /* 画面に固定 */
-  top: 0;          /* 上端に配置 */
-  left: 0;         /* 左端に配置 */
-  width: 100vw;    /* 横幅はビューポート幅いっぱい */
-  height: 100vh;   /* 高さはビューポート高さいっぱい */
-  object-fit: cover; /* 動画を切り抜いて画面全体にフィットさせる */
-  z-index: -2;      /* 他の要素より後ろに表示 */
+/* レスポンシブ動画 */
+video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 1;
 }
 
-/* 波紋の見た目の基本スタイル */
+/* 波紋コンテナ（動画の上に重ねる） */
+#ripple-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 波紋のスタイルとアニメーション */
 .ripple {
-  position: absolute; /* 自由な位置に配置可能 */
-  width: 30px;        /* 初期の幅 */
-  height: 30px;       /* 初期の高さ */
-  border: 1px solid rgba(255, 255, 255, 0.6); /* 半透明の白い枠線 */
-  border-radius: 50%; /* 円形にする */
-  background: transparent; /* 中は透明 */
-  transform: translate(-50%, -50%) scale(0.2); /* 中心から開始し、小さく */
-  pointer-events: none; /* 波紋はクリックなどの操作を受け付けない */
-  animation: rippleEffect 3s ease-out forwards; /* 3秒かけて波紋のアニメーションを実行 */
-  z-index: -1;        /* 動画の上、他の要素より後ろに表示 */
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  background: transparent;
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: rippleEffect 5s ease-out forwards;
 }
 
-/* 2つ目の波紋を少し遅らせて開始 */
+/* 時間差クラス */
 .delay-1 { animation-delay: 0.3s; }
+.delay-2 { animation-delay: 0.6s; }
+.delay-3 { animation-delay: 0.9s; }
 
-/* 3つ目の波紋をさらに遅らせて開始 */
-.delay-2 { animation-delay: 0.8s; }
-
-/* 波紋の広がりと消え方を定義 */
+/* 波紋アニメーション */
 @keyframes rippleEffect {
   0% {
-    transform: translate(-50%, -50%) scale(0.2); /* 小さくて中央にある */
-    opacity: 0.8;        /* 少し透明 */
-    filter: blur(0px);   /* くっきり */
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.8;
+    filter: blur(0);
   }
   50% {
-    opacity: 0.4;        /* 少し薄くなる */
-    filter: blur(1px);   /* 少しぼかす */
+    opacity: 0.7;
+    filter: blur(3px);
   }
   100% {
-    transform: translate(-50%, -50%) scale(20); /* 大きく広がる */
-    opacity: 0;          /* 透明になって消える */
-    filter: blur(2px);   /* ぼかしが強くなる */
+    transform: translate(-50%, -50%) scale(25);
+    opacity: 0;
+    filter: blur(5px);
+  }
+}
+
+/* START・Menu・横棒を含むコンテナ */
+#center-text-container {
+  position: fixed;
+  top: 75vh;               /* 画面の80%の位置に表示 */
+  left: 50%;
+  transform: translate(-50%, 0);
+  text-align: center;
+  color: white;
+  z-index: 20;
+  user-select: none;
+  cursor: pointer;
+  font-family: sans-serif;
+  width: 100vw;
+  max-width: 600px;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+
+/* STARTの文字 */
+#start-text {
+  font-size: clamp(24px, 5vw, 48px);
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+/* 白い棒（横線） */
+#separator {
+  width: 100vw;
+  height: 2px;
+  background-color: white;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Menuの文字 */
+#menu-text {
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: normal;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+}
+
+/* 表示時に付けるクラス */
+#center-text-container.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ------- レスポンシブ補助：高さが小さい画面で位置調整 ------- */
+@media screen and (max-height: 600px) {
+  #center-text-container {
+    top: 65vh;
   }
 }

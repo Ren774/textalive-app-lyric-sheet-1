@@ -10,6 +10,11 @@
 const API_KEY = "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"; // ←ご自身のAPIキーに置き換えてください
 const API_URL = "https://api.perplexity.ai/chat/completions"; // Perplexity API
 
+// 背景切り替えinterval
+const interval = [23000,11000,10000,12000,11000,
+                  22000,  13000,30000,11000,12000,11000,31000,0
+]  
+
 async function getAIReply() {
   const response = await fetch(API_URL, {
     method: "POST",
@@ -112,18 +117,17 @@ player.addListener({
       });*/
 
       // パレードレコード / きさら
-      player.createFromSongUrl("https://piapro.jp/t/GCgy/20250202202635", {
+
+      // ハローフェルミ
+      /* 曲の情報 */   
+      player.createFromSongUrl("https://piapro.jp/t/oTaJ/20250204234235", {
         video: {
-          // 音楽地図訂正履歴
-          beatId: 4694279,
-          chordId: 2830734,
-          repetitiveSegmentId: 2946482,
-      
-          // 歌詞URL: https://piapro.jp/t/FJ5N
-          // 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/piapro.jp%2Ft%2FGCgy%2F20250202202635
-          lyricId: 67814,
-          lyricDiffId: 20658
-        },
+          beatId: 4694278,
+          chordId: 2830733,
+          repetitiveSegmentId: 2946481,
+          lyricId: 67813,
+          lyricDiffId: 20657
+        }
       });
     }
     
@@ -405,3 +409,44 @@ player.addListener({
 
   // 他のリスナー（必要に応じて追加）...
 });
+
+
+// 並び替えた画像を sessionStorage から取得
+const sortedImagesJSON = sessionStorage.getItem("sortedImages");
+let bgIndex = 0;
+
+if (sortedImagesJSON) {
+  const sortedImages = JSON.parse(sortedImagesJSON);
+  const bgContainer = document.getElementById("bg-slideshow");
+
+  // 画像要素を順番に追加（非表示状態）
+  sortedImages.forEach((imgData, i) => {
+    const img = document.createElement("img");
+    img.src = imgData.base64;
+    if (i === 0) img.classList.add("active"); // 最初の画像を表示
+    bgContainer.appendChild(img);
+  });
+
+  const images = bgContainer.querySelectorAll("img");
+  let bgIndex = 0;
+
+  function changeImageSequentially() {
+    // 現在の画像を非表示
+    images[bgIndex % images.length].classList.remove("active");
+
+    // インデックス更新
+    bgIndex = (bgIndex + 1) % images.length;
+
+    // 次の画像を表示
+    images[bgIndex].classList.add("active");
+
+    // 次の切り替えまでの時間（intervalが足りない場合はデフォルト1万ミリ秒）
+    const nextDelay = interval[bgIndex % interval.length] || 10000;
+
+    // 次の画像に切り替える
+    setTimeout(changeImageSequentially, nextDelay);
+  }
+
+  // 最初の呼び出し（最初の画像は表示済みなので、初回遅延を使う）
+  setTimeout(changeImageSequentially, interval[0] || 10000);
+}

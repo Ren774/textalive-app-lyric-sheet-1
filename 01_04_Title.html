@@ -2,26 +2,27 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>動画背景 + 遅延付き波紋（3つの円）</title>
-  <!-- 外部のCSSファイルを読み込む -->
+  <title>動画に中央波紋エフェクト</title>
   <link rel="stylesheet" href="01_04_Title.css" />
 </head>
 <body>
+  <!-- 動画表示（幅高さ100%にフィット） -->
+  <video id="video" src="Title_MV_minamo.mp4" autoplay muted playsinline></video>
 
-  <!-- 背景として表示する動画 -->
-  <video id="bgVideo" autoplay muted playsinline>
-    <source src="Title_Mv.mp4" type="video/mp4">
-    このブラウザは動画をサポートしていません。
-  </video>
+  <!-- 波紋エフェクトのコンテナ（動画の上に重ねる） -->
+  <div id="ripple-container"></div>
 
-  <!-- 外部のJavaScriptファイルを読み込む -->
+  <!-- START・白い棒・Menuをまとめたコンテナ -->
+  <div id="center-text-container">
+    <div id="start-area">
+      <div id="start-text">START</div>
+    </div>
+    <div id="separator"></div>
+    <div id="menu-area">
+      <div id="menu-text">Menu</div>
+    </div>
+  </div>
+  
   <script src="01_04_Title.js"></script>
-
-  <!-- ★追加部分: クリック用の透明なdiv -->
-  <div id="clickLayer"></div>
-
-  <!-- 外部JavaScriptファイルの読み込み（元のまま） -->
-  <script src="01_04_Title.js"></script>
-
 </body>
 </html>
