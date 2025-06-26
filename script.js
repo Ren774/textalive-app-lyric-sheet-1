@@ -178,7 +178,7 @@ player.addListener({
 
     // 最後に取得した再生時刻の情報をリセット
     lastTime = -1;
-  },
+  }, 
 
   /* 再生コントロールができるようになったら呼ばれる */
   onTimerReady() {
