@@ -10,6 +10,8 @@
 const API_KEY = "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"; // ←ご自身のAPIキーに置き換えてください
 const API_URL = "https://api.perplexity.ai/chat/completions"; // Perplexity API
 
+let bgChangeTimeoutId = null;  // setTimeout のIDを記録
+
 // 背景切り替えinterval
 const interval = [23000,11000,10000,12000,11000,
                   22000,  13000,30000,11000,12000,11000,31000,0
@@ -440,13 +442,62 @@ if (sortedImagesJSON) {
     // 次の画像を表示
     images[bgIndex].classList.add("active");
 
-    // 次の切り替えまでの時間（intervalが足りない場合はデフォルト1万ミリ秒）
-    const nextDelay = interval[bgIndex % interval.length] || 10000;
-
     // 次の画像に切り替える
     setTimeout(changeImageSequentially, nextDelay);
   }
 
-  // 最初の呼び出し（最初の画像は表示済みなので、初回遅延を使う）
-  setTimeout(changeImageSequentially, interval[0] || 10000);
+  
 }
+
+
+function changeImageSequentially() {
+  // 再生中でなければ実行しない
+  if (!player.isPlaying) return;
+
+  const images = document.querySelectorAll("#bg-slideshow img");
+  if (!images.length) return;
+
+  // 現在の画像を非表示
+  images[bgIndex % images.length].classList.remove("active");
+
+  // インデックス更新
+  bgIndex = (bgIndex + 1) % images.length;
+
+  // 次の画像を表示
+  images[bgIndex].classList.add("active");
+
+  // 次の切り替えまでの時間
+  const nextDelay = interval[bgIndex % interval.length] || 10000;
+
+  // タイマーセット（IDを保存）
+  bgChangeTimeoutId = setTimeout(changeImageSequentially, nextDelay);
+}
+
+// 再生開始時 → タイマー開始
+player.addListener({
+  onPlay() {
+    if (bgChangeTimeoutId === null) {
+      changeImageSequentially();
+    }
+
+    // プレイボタンの表示処理は既存コード通り
+    const a = document.querySelector("#control > a#play");
+    a.textContent = "\uf28b";
+  },
+
+  // 一時停止時 → タイマー停止
+  onPause() {
+    clearTimeout(bgChangeTimeoutId);
+    bgChangeTimeoutId = null;
+
+    const a = document.querySelector("#control > a#play");
+    a.textContent = "\uf144";
+  },
+
+  // 停止時 → タイマー停止＋状態リセット
+  onStop() {
+    clearTimeout(bgChangeTimeoutId);
+    bgChangeTimeoutId = null;
+    bgIndex = 0;
+  }
+});
