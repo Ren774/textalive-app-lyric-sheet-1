@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>画像アップローダー</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2em auto; }
+    img { max-width: 100px; margin: 5px; vertical-align: middle; border: 1px solid #ccc; }
+    .status { margin: 1em 0; font-weight: bold; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>画像アップローダー（index.htmlに画像を渡す）</h1>
+
+  <!-- 画像アップロード -->
+  <h3>1. 画像をアップロード</h3>
+  <input type="file" id="imgInput" accept="image/*" multiple>
+  <button id="resetBtn" style="margin-top:5px;">リセット</button>
+  <div id="imageContainer"></div>
+  <div class="status" id="imgStatus"></div>
+
+  <!-- index.htmlに遷移 -->
+  <h3>2. 次へ進む</h3>
+  <button id="goIndexBtn" style="display:none; margin-top:10px;">index.htmlへ移動</button>
+
+  <script>
+    const imgInput = document.getElementById("imgInput");
+    const imageContainer = document.getElementById("imageContainer");
+    const imgStatus = document.getElementById("imgStatus");
+    const goIndexBtn = document.getElementById("goIndexBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let imageDescriptions = []; // ← 形式は [{ base64, thumbUrl }] に統一
+
+    imgInput.addEventListener("change", async () => {
+      const files = Array.from(imgInput.files || []);
+      imageDescriptions = [];
+
+      if (files.length === 0) return;
+
+      imgStatus.textContent = "画像を処理中...";
+      try {
+        for (const file of files) {
+          const base64 = await fileToDataURL(file);
+          const thumbUrl = URL.createObjectURL(file);
+
+          imageDescriptions.push({
+            base64,
+            thumbUrl
+          });
+
+          const img = document.createElement("img");
+          img.src = thumbUrl;
+          img.alt = file.name;
+          imageContainer.appendChild(img);
+        }
+
+        imgStatus.textContent = "画像の読み込み完了";
+        imgStatus.className = "status success";
+        goIndexBtn.style.display = "inline-block";
+
+      } catch (err) {
+        imgStatus.textContent = "エラー：" + err.message;
+        imgStatus.className = "status error";
+      }
+    });
+
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // index.htmlへ画像を渡す
+    goIndexBtn.addEventListener("click", () => {
+      if (imageDescriptions.length === 0) {
+        alert("画像がありません。");
+        return;
+      }
+      sessionStorage.setItem("sortedImages", JSON.stringify(imageDescriptions));
+      window.location.href = "index.html";
+    });
+
+    resetBtn.addEventListener("click", () => {
+      imageDescriptions = [];
+      imageContainer.innerHTML = "";
+      imgStatus.textContent = "";
+      goIndexBtn.style.display = "none";
+    });
+  </script>
+</body>
+</html>

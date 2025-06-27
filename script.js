@@ -10,12 +10,26 @@
 const API_KEY = "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"; // ←ご自身のAPIキーに置き換えてください
 const API_URL = "https://api.perplexity.ai/chat/completions"; // Perplexity API
 
-let bgChangeTimeoutId = null;  // setTimeout のIDを記録
+// 切り替えに使うタイマーID（停止や再開に使う）
+let bgChangeTimeoutId = null;
 
-// 背景切り替えinterval
-const interval = [23000,11000,10000,12000,11000,
-                  22000,  13000,30000,11000,12000,11000,31000,0
-]  
+// 既に切り替えが始まっているかどうか
+let bgChange = 0;
+
+// 切り替え間隔（ms）を定義した配列
+// 曲の構成に合わせてカスタマイズされています（例: 23秒, 11秒など）
+const interval = [
+  23000, 11000, 10000, 12000, 11000,
+  22000, 13000, 31000, 11000, 12000,
+  11000, 31000, 10000
+];
+
+
+// 現在の背景画像のインデックス（何番目の画像を表示しているか）
+let bgIndex = 0;
+
+// sessionStorage から Base64 画像の並び順情報を取得
+const sortedImagesJSON = sessionStorage.getItem("sortedImages");
 
 async function getAIReply() {
   const response = await fetch(API_URL, {
@@ -138,14 +152,14 @@ player.addListener({
     .then(reply => {
       // 返答がエラーや空の場合も考慮
       if (!reply) {
-        alert("AIの返答が取得できませんでした。");
+        //alert("AIの返答が取得できませんでした。");
       } else {
         alert("AIの返答: " + reply);
       }
     })
     .catch(err => {
       // エラー内容も詳細に表示
-      alert("API呼び出しエラー: " + (err && err.message ? err.message : err));
+      //alert("API呼び出しエラー: " + (err && err.message ? err.message : err));
     });
 
   },
@@ -242,6 +256,11 @@ player.addListener({
     const a = document.querySelector("#control > a#play");
     while (a.firstChild) a.removeChild(a.firstChild);
     a.appendChild(document.createTextNode("\uf28b"));
+
+    //alert("onPlay起動");
+
+    
+    
   },
 
   /* 楽曲の再生が止まったら呼ばれる */
@@ -262,6 +281,14 @@ document.querySelector("#control > a#play").addEventListener("click", (e) => {
       player.requestPlay();
     }
   }
+
+  // 画像切り替え開始タイミングをずらすため、応急処置でここに
+  if(bgChange == 0){
+      bgChange = 1;
+      // 背景画像切り替えをスタート
+      changeImageSequentially();
+    }
+
   return false;
 });
 
@@ -384,120 +411,46 @@ const backgroundImages = [
   "url('https://cdn.pixabay.com/photo/2021/10/30/17/54/desert-6755127_1280.jpg')",
 ];
 
-// 現在表示している背景画像のインデックスを記録します
-let currentImageIndex = 0;
-
-// 背景画像を切り替える関数を定義します
-function changeBackgroundImage() {
-  // bodyの背景画像スタイルを、現在のインデックスにある画像に設定します
-  document.body.style.backgroundImage = backgroundImages[currentImageIndex];
-
-  // インデックスを1つ進めます（最後まで行ったら0に戻るようにします）
-  currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
-}
-
-// TextAlive App のプレイヤーが利用可能になったときのイベント
-player.addListener({
-  onAppReady(app) {
-    // ここに他の初期化コードが入っているかもしれません
-
-    // 最初の背景画像を即時に設定しておきます（ページ読み込み直後）
-    changeBackgroundImage();
-
-    // setInterval関数で、10秒ごと（10000ミリ秒ごと）に
-    // changeBackgroundImage 関数を実行するように設定します
-    setInterval(changeBackgroundImage, 10000);
-  }
-
-  // 他のリスナー（必要に応じて追加）...
-});
-
-
-// 並び替えた画像を sessionStorage から取得
-const sortedImagesJSON = sessionStorage.getItem("sortedImages");
-let bgIndex = 0;
-
+// 画像が保存されている場合のみ処理を進める
 if (sortedImagesJSON) {
+  // JSON文字列 → 配列に変換
   const sortedImages = JSON.parse(sortedImagesJSON);
+
+  // HTML内の背景画像スライドショーコンテナを取得
   const bgContainer = document.getElementById("bg-slideshow");
 
-  // 画像要素を順番に追加（非表示状態）
+  // 各画像を <img> 要素として生成し、DOMに追加
   sortedImages.forEach((imgData, i) => {
-    const img = document.createElement("img");
-    img.src = imgData.base64;
-    if (i === 0) img.classList.add("active"); // 最初の画像を表示
-    bgContainer.appendChild(img);
+    const img = document.createElement("img");  // <img>タグ作成
+    img.src = imgData.base64;                   // 画像データをsrcに指定
+    if (i === 0) img.classList.add("active");   // 最初の画像だけ表示
+    bgContainer.appendChild(img);               // DOMに追加
   });
-
-  const images = bgContainer.querySelectorAll("img");
-  let bgIndex = 0;
-
-  function changeImageSequentially() {
-    // 現在の画像を非表示
-    images[bgIndex % images.length].classList.remove("active");
-
-    // インデックス更新
-    bgIndex = (bgIndex + 1) % images.length;
-
-    // 次の画像を表示
-    images[bgIndex].classList.add("active");
-
-    // 次の画像に切り替える
-    setTimeout(changeImageSequentially, nextDelay);
-  }
-
-  
 }
 
-
+/**
+ * 再生中に呼び出され、次の背景画像を表示する関数
+ * 一定時間後に自動的に次の画像に切り替えます
+ */
 function changeImageSequentially() {
-  // 再生中でなければ実行しない
-  if (!player.isPlaying) return;
-
   const images = document.querySelectorAll("#bg-slideshow img");
   if (!images.length) return;
 
-  // 現在の画像を非表示
-  images[bgIndex % images.length].classList.remove("active");
+  // 今のbgIndexに対応するdelayを取得（0やundefinedなら10000ms）
+  const currentDelay = interval[bgIndex % interval.length] || 10000;
 
-  // インデックス更新
-  bgIndex = (bgIndex + 1) % images.length;
+  // 最初に待機してから切り替え
+  bgChangeTimeoutId = setTimeout(() => {
+    // 現在の画像を非表示
+    images[bgIndex % images.length].classList.remove("active");
 
-  // 次の画像を表示
-  images[bgIndex].classList.add("active");
+    // 次の画像に切り替え
+    bgIndex = (bgIndex + 1) % images.length;
+    images[bgIndex].classList.add("active");
 
-  // 次の切り替えまでの時間
-  const nextDelay = interval[bgIndex % interval.length] || 10000;
+    // 再帰的に次の画像切り替えを呼び出す
+    changeImageSequentially();
 
-  // タイマーセット（IDを保存）
-  bgChangeTimeoutId = setTimeout(changeImageSequentially, nextDelay);
+  }, currentDelay);
 }
 
-// 再生開始時 → タイマー開始
-player.addListener({
-  onPlay() {
-    if (bgChangeTimeoutId === null) {
-      changeImageSequentially();
-    }
-
-    // プレイボタンの表示処理は既存コード通り
-    const a = document.querySelector("#control > a#play");
-    a.textContent = "\uf28b";
-  },
-
-  // 一時停止時 → タイマー停止
-  onPause() {
-    clearTimeout(bgChangeTimeoutId);
-    bgChangeTimeoutId = null;
-
-    const a = document.querySelector("#control > a#play");
-    a.textContent = "\uf144";
-  },
-
-  // 停止時 → タイマー停止＋状態リセット
-  onStop() {
-    clearTimeout(bgChangeTimeoutId);
-    bgChangeTimeoutId = null;
-    bgIndex = 0;
-  }
-});

@@ -16,7 +16,9 @@ body {
   background-size: 100vw 100vh;
 
   margin: 0; /* ページ端の余白をなくす */
-  overflow: hidden; /* スクロールバーを非表示に */
+  
+  overflow: auto;
+
   background: radial-gradient(#001f3f, #000814); /* 夜の水面のような背景 */
   height: 100vh; /* 画面の高さを100%に */
   position: relative; /* 波紋の絶対位置指定の基準にする */
